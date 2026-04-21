@@ -33,9 +33,15 @@ gsv::gsv(talker talk, fields::const_iterator first, fields::const_iterator last)
 	// mandatory and the rest must be a multiple of 4 (the four parts
 	// of satellite information).
 	const auto size = std::distance(first, last);
-	if ((size < 3) || ((size - 3) % 4 != 0)) {
+
+	// optional last field for signal ID (NMEA 4.10 or later)
+	// so adjust for that here depending on field count
+	// not parsed but don't throw an error
+	const auto fixedSize = size % 4 == 0 ? 4 : 3;
+
+	if ((size < fixedSize) || ((size - fixedSize) % 4 != 0)) {
 		throw std::invalid_argument{
-			std::string{"invalid number of fields in gsv: expected 3+n*4, got "}
+			std::string{"invalid number of fields in gsv: expected 3+n*4+1(opt), got "}
 			+ std::to_string(size)};
 	}
 
@@ -43,7 +49,7 @@ gsv::gsv(talker talk, fields::const_iterator first, fields::const_iterator last)
 	read(*(first + 1), message_number_);
 	read(*(first + 2), n_satellites_in_view_);
 
-	const int num_satellite_info = std::min(4, static_cast<int>((size - 3) / 4));
+	const int num_satellite_info = std::min(4, static_cast<int>((size - fixedSize) / 4));
 	int index = 3;
 	for (int i = 0; i < num_satellite_info; ++i, index += 4) {
 		satellite_info info;

@@ -18,7 +18,11 @@ gsa::gsa()
 gsa::gsa(talker talk, fields::const_iterator first, fields::const_iterator last)
 	: sentence(ID, TAG, talk)
 {
-	if (std::distance(first, last) != 17)
+	const auto size = std::distance(first, last);
+
+	// optional last field for GNSS system ID (NMEA 4.10 or later)
+	// not currently parsed but don't throw an error
+	if (size < 17 || size > 18)
 		throw std::invalid_argument{"invalid number of fields in gsa"};
 
 	read(*(first + 0), sel_mode_);

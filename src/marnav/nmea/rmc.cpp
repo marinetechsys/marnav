@@ -19,7 +19,10 @@ rmc::rmc(talker talk, fields::const_iterator first, fields::const_iterator last)
 {
 	// before and after NMEA 2.3
 	const auto size = std::distance(first, last);
-	if ((size < 11) || (size > 12))
+
+	// optional last field for navigational status indicator (NMEA 4.10 or later)
+	// not parsed but don't throw an error
+	if ((size < 11) || (size > 13))
 		throw std::invalid_argument{"invalid number of fields in rmc"};
 
 	read(*(first + 0), time_utc_);
